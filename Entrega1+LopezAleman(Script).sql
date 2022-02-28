@@ -188,3 +188,69 @@ Insert into `Profesores_cursos` VALUES (7,4);
 Insert into `Profesores_cursos` VALUES (8,3);
 Insert into `Profesores_cursos` VALUES (9,2);
 Insert into `Profesores_cursos` VALUES (10,1);
+
+#Consigna: Presentar en formato .sql el script de creación de 5 vistas con base en los datos de la base de datos del proyecto final. 
+#1 vista: Cantidad de alumnos de Argentina
+use elearning;
+CREATE OR REPLACE VIEW alumnos_arg_view
+AS
+SELECT a.alumno_id, a.nombre_completo, a.mail, c.ciudad_id, c.nombre AS ciudad_nombre, p.pais_id, p.pais_nombre  
+FROM  alumnos AS a 
+LEFT JOIN ciudad AS c ON (a.ciudad_id = c.ciudad_id)
+LEFT JOIN paises AS p ON (c.pais_id = p.pais_id)
+WHERE p.pais_id = 1;
+
+#2 Vista (Seguridad) - Tabla de alumnos sin password
+CREATE OR REPLACE VIEW alumnos_vista_admin
+AS 
+SELECT a.alumno_id, a.ciudad_id, a.mail, a.nombre_completo, a.fecha_nacimiento
+FROM alumnos AS a;
+
+#Modificación de vista anterior
+ALTER VIEW alumnos_vista_admin
+AS 
+SELECT a.alumno_id, a.ciudad_id, a.mail, a.nombre_completo
+FROM alumnos AS a;
+
+#3° VISTA recuento de alumnos por curso
+CREATE OR REPLACE VIEW alumnos_curso_view
+AS
+SELECT i.curso_id, c.titulo, COUNT(i.alumno_id) AS alumnos_cantidad
+FROM  inscripciones AS i 
+LEFT JOIN cursos AS c ON (i.curso_id = c.curso_id) 
+GROUP BY i.curso_id;
+
+
+#4° VISTA recuento de cursos abiertos por horario (horario_detalle)
+CREATE OR REPLACE VIEW insc_hor_view
+AS
+SELECT  h.horario_detalle, COUNT(c.curso_id) AS tot_horario
+FROM  cursos as c
+LEFT JOIN horarios AS h ON (c.horario_id = h.horario_id) 
+GROUP BY c.horario_id;
+
+#4.1 detalle de horarios disponibles por cada curso
+CREATE OR REPLACE VIEW hor_curso_view
+AS
+SELECT  c.titulo, h.horario_detalle
+FROM  cursos as c
+LEFT JOIN horarios AS h ON (c.horario_id = h.horario_id);
+
+#5° Vista de conteo total de cursos Arprobados (estado_curso =1) por tematica
+CREATE OR REPLACE VIEW cursos_tema_view
+AS
+SELECT  t.tematica_especifica, COUNT(c.curso_id) AS tot_tema
+FROM  tematica as t
+LEFT JOIN cursos AS c ON (c.tematica_id = t.tematica_id)
+LEFT JOIN curso_estado as ce ON (c.curso_estado_id = ce.curso_estado_id)
+WHERE ce.curso_estado_id= 1
+GROUP BY t.tematica_especifica;
+
+#6 ingresos por profesor (precio de curso) 
+CREATE OR REPLACE VIEW profe_sumprecio_view
+AS 
+SELECT p.nombre_completo, SUM(c.precio)
+FROM profesores as p
+LEFT JOIN profesores_cursos as pc ON (p.profesor_id = pc.profesor_id)
+LEFT JOIN cursos as c ON (c.curso_id = pc.curso_ID)
+GROUP BY p.nombre_completo;
