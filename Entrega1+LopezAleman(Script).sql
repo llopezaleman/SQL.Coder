@@ -254,3 +254,9 @@ FROM profesores as p
 LEFT JOIN profesores_cursos as pc ON (p.profesor_id = pc.profesor_id)
 LEFT JOIN cursos as c ON (c.curso_id = pc.curso_ID)
 GROUP BY p.nombre_completo;
+
+
+#Llamamos funciones del script de funciones link: 
+SELECT elearning.f_get_cantidad_alumnos_curso(3)
+SELECT elearning.promedio_costo_cursos_por_tematica(2);
+
