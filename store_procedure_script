@@ -1,0 +1,41 @@
+#Consigna: Sobre las tablas creadas anteriormente para tu proyecto final, agregar 2 Stored Procedures que te permitan trabajar sobre las mismas.
+
+# 1. Ordenamiento de una tabla por un atributo, y definición de orden ascendente o descendente:
+DROP PROCEDURE IF EXISTS ordenar_atributo;
+ DELIMITER // 
+CREATE PROCEDURE ordenar_atributo (IN sort_column varchar(100), IN order_column varchar(100)) -- Creación de SP con 2 parámetros de entrada. 
+-- 1° parámetro atributo (columna) por la cuál quiero ordenar la tabla en formato varchar
+-- 2° parámetro el orden por el cuál quiero ordenar el atributo
+BEGIN	
+	SET @query = CONCAT('SELECT * FROM cursos ORDER BY ',sort_column,' ', order_column); -- Defino una variable para concatenar como texto para construir la query 
+    -- la sentencia de consulta (statement1) luego será traducida de texto para poder ser ejecutada como una query
+	PREPARE statement1 FROM @query; -- se prepara la query 
+    EXECUTE statement1; -- se ejecuta
+	DEALLOCATE PREPARE statement1; -- libera el resultado
+END //
+CALL ordenar_atributo('precio', 'DESC')
+
+#2Inserción de registros en la tabla alumnos
+DROP PROCEDURE IF EXISTS insert_info_alumnos; -- borramos el SP si existiera
+DELIMITER // 
+Create PROCEDURE insert_info_alumnos (IN in_alumno_id int, IN in_ciudad_id int ,IN in_pass Varchar(255), IN in_mail Varchar(320), IN int_nombre Varchar(80), IN in_fecha_nac date)
+-- creo el SP, indicando 6 parámetros de entrada, 1 por cada columna de la tabla a la quer quiero insertar nuevos registros 
+    BEGIN
+	insert into alumnos (alumno_id, ciudad_id, password, mail, nombre_completo, fecha_nacimiento ) values (in_alumno_id, in_ciudad_id , in_pass, in_mail ,int_nombre, in_fecha_nac);
+		-- Luego se indica que esos valores deberían insertarse en la tabla alumnos, y como los valores se están insertando. En razón de la relación entre el parámetro y la columna de la tabla elegida.
+   END //    
+    Call insert_info_alumnos (40, 1, '#23#asauh<dsd2nnsd', 'raul_gonzalez@gmail.com', 'Raul GONZALEZ', '2001-03-13');
+    -- llamamos el SP para insertar los datos en la tabla
+
+#3 Actualización de precios de cursos, en razón de su temática:
+
+DROP PROCEDURE IF EXISTS sp_aumento_precio_cursos_tematica; -- borramos el SP si existiera
+DELIMITER //
+CREATE PROCEDURE sp_aumento_precio_cursos_tematica (IN tematica_id_sp integer, IN porcentaje_aumento float, OUT cursos_impactados integer)
+ – definición de parámetros de entrada y salida. 1: la temática de curso cuyos precios se pretende actualizar, luego el porcentaje de aumento que se quiere aplicar sobre el precio actual del curso, y finalmente, el parámetro de salida a especificarse es la cantidad de cursos alcanzados por este ajuste de precio.
+BEGIN	
+    UPDATE cursos SET precio = (precio * (1 + porcentaje_aumento)) WHERE tematica_id = tematica_id_sp;
+  – actualización del precio acorde al porcentaje definido en porcentaje_aumento aplicándose únicamente a los cursos cuya temática se encuentra dentro de las elegidas.
+    SELECT ROW_COUNT() INTO cursos_impactados;
+ END //
+
