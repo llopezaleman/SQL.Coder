@@ -1,3 +1,5 @@
+#Creación de base de datos de elearning y sus tablas
+
 create database elearning;
 Use elearning;
 #CREACIÓN DE TABLAS - 1° Pre-Entrega
