@@ -1,0 +1,30 @@
+#Consigna: Presentar el script de creación de 2 funciones almacenadas con base en los datos de la base de datos del proyecto final. Puedes incluir una función que haga uso interno de funciones propias de SQL, una segunda función que permita obtener valores de otras tablas, reemplazando a JOIN o de una subconsulta. Procura que cada función reciba, al menos, un parámetro de entrada. #Los datos que retorne pueden ser cualquier tipo de dato. 
+
+#1° Función→Permite traer la cantidad total de inscripciones por horario 
+
+CREATE FUNCTION `f_get_cantidad_alumnos_curso`(param_curso_id INT) 
+RETURNS int 
+READS SQL DATA 
+BEGIN 
+DECLARE cantidad INT; 
+SET cantidad = (SELECT COUNT(i.inscripcion_id) cantidad FROM elearning.inscripciones i 
+LEFT JOIN elearning.cursos c ON (i.curso_id = c.curso_id) 
+WHERE c.horario_id = param_curso_id 
+GROUP BY c.horario_id); 
+RETURN cantidad; 
+END 
+
+
+#Luego la llamamos 
+SELECT elearning.f_get_cantidad_alumnos_curso(3) 
+
+
+#2da funcion→ promedio de precios de cursos por temática 
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `promedio_costo_cursos_por_tematica`(param_tematica_id int) RETURNS float
+    READS SQL DATA
+BEGIN 
+	DECLARE promedio FLOAT; 
+	SET promedio = (SELECT AVG(c.precio) FROM elearning.cursos c WHERE c.tematica_id = param_tematica_id);
+	RETURN promedio; 
+END
