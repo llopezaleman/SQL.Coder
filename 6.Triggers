@@ -1,0 +1,101 @@
+use elearning; #llamamos la base a utilizar
+DROP TABLE alumnos_log; #creamos la nueva tabla log
+CREATE TABLE `alumnos_log`  (
+ `alumnos_log_id` int NOT NULL AUTO_INCREMENT,
+  `alumno_id` int NOT NULL,
+  `ciudad_id` int NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `mail` varchar(320)  NOT NULL,
+  `nombre_completo` varchar(80) NOT NULL,
+  `fecha_nacimiento` date NOT NULL,
+  `fecha_log` DATE NOT NULL, #agregamos el campo de fecha y hora para tener registro del momento en el que la línea fue insertada en la tabla alumnos
+  `hora_log` TIME NOT NULL,
+  `accion` varchar(6) NOT NULL,  #agregamos el campos acción que a diferencia de la tabla original especificará la acción que disparo el trigger
+   `usuario` varchar(80) NOT NULL, #agregamos el campo usuario que realizo el cambio en la tabla de origen
+    PRIMARY KEY (`alumnos_log_id`)
+);
+
+DROP TRIGGER IF EXISTS trigger_alumnos_insert; #eliminamos si existe el trigger
+DELIMITER $$
+CREATE TRIGGER trigger_alumnos_insert  #creamos el trigger
+AFTER INSERT #definimos la acción que va a disparar este trigger
+ON alumnos FOR EACH ROW # definimos la tabla en la que el trigger opera
+BEGIN  #indicamos en que campos de la tabla alumnos_log deberían ingresarse  
+   INSERT INTO alumnos_log(alumno_id, ciudad_id, password, mail, nombre_completo, fecha_nacimiento, fecha_log, hora_log, accion, usuario)
+        VALUES(NEW.alumno_id, NEW.ciudad_id, NEW.password, NEW.mail, NEW.nombre_completo, NEW.fecha_nacimiento, CURRENT_DATE, CURRENT_TIME, 'INSERT', current_user());
+		# y especificamos que valores han de ingresarse y la fecha y hora a imprimirse. Así mismo, el trigger registra en formato varchar la acción realizada, y finalmente el usuario que gestiono la misma.
+END$$    
+DELIMITER ;
+
+DROP TRIGGER IF EXISTS trigger_alumnos_update;
+DELIMITER $$
+CREATE TRIGGER trigger_alumnos_update
+BEFORE UPDATE
+ON alumnos FOR EACH ROW
+BEGIN
+   INSERT INTO alumnos_log(alumno_id, ciudad_id, password, mail, nombre_completo, fecha_nacimiento, fecha_log, hora_log, accion, usuario)
+        VALUES(OLD.alumno_id, OLD.ciudad_id, OLD.password, OLD.mail, OLD.nombre_completo, OLD.fecha_nacimiento, CURRENT_DATE, CURRENT_TIME, 'UPDATE', current_user());
+END$$    
+DELIMITER ;
+
+
+SELECT * FROM alumnos_log;  #llamamos la tabla log
+#Insertamos valores en la tabla log
+INSERT INTO alumnos(ciudad_id, password, mail, nombre_completo, fecha_nacimiento) VALUES (1, 'reyeyeyeyttterd', 'test_triger@gmail.com', 'JOSE TRIGGER', '2001-02-13');
+# Actualizamos valores en la tabla log
+UPDATE alumnos SET mail = 'test_trig_upd@gnail.com' WHERE alumno_id = 21;
+
+SELECT * FROM alumnos_log;  #volvemos a llamar la tabla para ver los registros de la inserción y actualización de valores
+
+#----- Creamos los siguientes triggers sobre la tabla CURSOS
+
+use elearning; #llamamos la base a utilizar
+
+#Comenzamos creando la tabla de log de cursos
+CREATE TABLE `cursos_log`  (
+ `curso_log_id` int NOT NULL AUTO_INCREMENT,
+  `curso_id` int NOT NULL,
+  `titulo` varchar(50) NOT NULL,
+  `precio` float NOT NULL,
+  `tematica_id` int NOT NULL,
+  `horario_id` int NOT NULL,
+   `curso_estado_id` int NOT NULL,
+  `fecha_log` DATE NOT NULL,
+  `hora_log` TIME NOT NULL,
+  `accion` varchar(6) NOT NULL,
+   `usuario` varchar(80) NOT NULL,
+    PRIMARY KEY (`curso_log_id`)
+);
+
+#Eliminamos el trigger si existe
+DROP TRIGGER IF EXISTS trigger_cursos_insert;
+
+DELIMITER $$
+CREATE TRIGGER trigger_cursos_insert
+AFTER INSERT  #Acción definida para el trigger INSERT
+ON cursos FOR EACH ROW #el insert que dispara el trigger es el de valores en la tabla cursos. Por cada línea que se agregue.
+BEGIN
+   INSERT INTO cursos_log(curso_id, titulo, precio, tematica_id, horario_id, curso_estado_id, fecha_log, hora_log, accion, usuario)
+        VALUES(NEW.curso_id, NEW.titulo, NEW.precio, NEW.tematica_id, NEW.horario_id, NEW.curso_estado_id, CURRENT_DATE, CURRENT_TIME, 'INSERT', current_user());
+END$$    
+DELIMITER ;
+
+
+#Creamos otro adicional por actualizaciones en la misma tabla cursos
+DROP TRIGGER IF EXISTS trigger_cursos_update;
+DELIMITER $$
+CREATE TRIGGER trigger_cursos_update
+BEFORE UPDATE
+ON cursos FOR EACH ROW
+BEGIN
+   INSERT INTO cursos_log(curso_id, titulo, precio, tematica_id, horario_id, curso_estado_id, fecha_log, hora_log, accion, usuario)
+        VALUES(NEW.curso_id, NEW.titulo, NEW.precio, NEW.tematica_id, NEW.horario_id, NEW.curso_estado_id, CURRENT_DATE, CURRENT_TIME, 'UPDATE', current_user());
+END$$    
+DELIMITER ;
+
+
+#Probamos que funcione el trigger
+SELECT * FROM cursos_log;
+INSERT INTO cursos(titulo, precio, tematica_id, horario_id, curso_estado_id) VALUES ('INGLES NIVEL 1',17000,1,2,1);
+UPDATE cursos SET titulo = 'CURSO TRIGGER' WHERE curso_id = 11;
+SELECT * FROM cursos_log;
