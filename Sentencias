@@ -1,0 +1,17 @@
+# SQL.Coder
+SQL Project for Coderhouse
+
+
+-- Crea usuario
+CREATE USER 'usuario_lectura'@'localhost' IDENTIFIED BY 'pass1';
+-- Asigna persmiso de solo lectura
+GRANT SELECT, SHOW VIEW ON elearning.* TO 'usuario_lectura'@'localhost';
+-- Recarga los permisos de los usuarios
+FLUSH PRIVILEGES;
+
+-- Crea usuario
+CREATE USER 'usuario_edicion'@'localhost' IDENTIFIED BY 'pass1';
+-- Asigna persmiso de insert, update y lectura
+GRANT SELECT, INSERT, UPDATE, SHOW VIEW ON elearning.* TO 'usuario_edicion'@'localhost';
+-- Recarga los permisos de los usuarios
+FLUSH PRIVILEGES;
