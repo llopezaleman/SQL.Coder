@@ -1,0 +1,39 @@
+use elearning;  # Llamo a la base que voy a utilizar
+SELECT @@AUTOCOMMIT; #Chequeo el status del autocommit
+SET AUTOCOMMIT=0;  #Seteo el autocommit en manual
+SELECT @@AUTOCOMMIT; #Valido que esté efectivamente en manual
+
+#Transacción para eliminar todos los registros de alumnos con IDs mayores a 15 y menores a 21.
+SELECT * FROM elearning.alumnos; #Seleciono la tabla a utilizar
+START TRANSACTION;
+DELETE FROM
+alumnos
+WHERE
+	alumno_id > 15 AND alumno_id < 21;   
+ #ROLLBACK; -- Deshacer
+ #COMMIT; -- Confirmar
+
+# INSERT INTO registro de alumnos de los IDs eliminados con la transacción previa
+INSERT INTO `alumnos` VALUES (15, 1, '$2a$10$cOig4.zln4llncuHrEFlcehwZFioN7YZUWBln8jMMTjX2gDZ.n2Hm', 'PSCi@gmail.com', 'PABLO CATTONI', '1978-06-23');
+INSERT INTO `alumnos` VALUES (16, 1, '$2a$10$QLoHeVjx1GYVBKCrByLvKeEOk5yVBTaqds82ejPG4qisDSxKhGI9i', 'vdipietromica@gmail.com', 'VIVIANA DI PIETROMICA', '2018-08-29');
+INSERT INTO `alumnos` VALUES (17, 3, '$2a$10$vNxk4QQPDG7A6NitWg3EJOsBofs68qrc1eklslE.dXZQy6BifwRSS', 'danielamechetti@hotmail.com', 'PAULA DANIELA MECHETTI', '2018-08-29');
+INSERT INTO `alumnos` VALUES (18, 2, '$2a$10$Rfv/yQDvhgEhh/TPtMcw9uWe7KORbYLhlWj4LyPRkJ0vzn.Tuqh9S', 'ivana.m.alvarez@hotmail.com', 'IVANA MELISSA ALVAREZ', '1994-05-29');
+INSERT INTO `alumnos` VALUES (19, 2, '$2a$10$jrD6dACENAPma5xShkP9l.0fvHQTyIGtI86qmdkt6Q12rzTSmLKg.', 'matiasszapiro@gmail.com', 'MATIAS DOMINGO  SZAPIRO', '1975-07-30');
+INSERT INTO `alumnos` VALUES (20, 1, '$2a$10$zHNmEMhhPR.dHrxclhTBYeVCTivNgn4HO9ir8dykDmFuClSpdvm3e', 'genosposetti@hotmail.com', 'GENOVEVA SPOSETTI', '1974-02-16');    
+    
+# Inserción de 8 registros en la tabla cursos en 2 lotes + Rollback del lote_15_18
+SELECT * FROM elearning.cursos;
+START TRANSACTION;
+INSERT INTO `cursos` VALUES (15,'ITALIANO NIVEL 1',1000,1,2,1);
+INSERT INTO `cursos` VALUES (16,'ITALIANO NIVEL 2',2000,1,1,1);
+INSERT INTO `cursos` VALUES (17,'ITALIANO NIVEL 3',3000,1,1,1);
+INSERT INTO `cursos` VALUES (18,'ITALIANO NIVEL 4',4000,1,1,2);
+SAVEPOINT lote_15_18;
+INSERT INTO `cursos` VALUES (19,'SQL Inicial',15000,4,1,1);
+INSERT INTO `cursos` VALUES (20,'SQL Intermedio',20000,4,1,1);
+INSERT INTO `cursos` VALUES (21,'SQL Avanzado',30000,4,2,1);
+INSERT INTO `cursos` VALUES (22,'SQL Ninja',15000,4,3,1);
+SAVEPOINT lote_19_22;
+ROLLBACK TO lote_15_18;
+#COMMIT;
+#ROLLBACK; -- Si quisieramos eliminar ambos lotes
